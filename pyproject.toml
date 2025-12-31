@@ -1,0 +1,16 @@
+[project]
+name = "accelerated_pca"
+version = "0.1.0"
+description = "Implementation of Principal Component Analysis (PCA) optimized for both CPU and GPU using Numba/CUDA, with easy benchmarking and comparison of performance."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "ipykernel>=6.31.0",
+    "matplotlib>=3.9.4",
+    "numpy>=2.0.2",
+    "pytest>=8.4.2",
+    "scikit-learn>=1.6.1",
+]
+
+[tool.uv]
+package = true

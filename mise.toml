@@ -1,0 +1,9 @@
+[tasks.build]
+description = "Compile all CUDA PCA files into shared library"
+run = "nvcc -Xcompiler -fPIC --shared src/accelerated_pca/cuda/pca_fit.cu src/accelerated_pca/cuda/pca_project.cu -o src/accelerated_pca/cuda/libpca_cuda.so -lcublas -lcusolver -lcudart"
+sources = ["src/accelerated_pca/cuda/*.cu"]
+outputs = ["src/accelerated_pca/cuda/libpca_cuda.so"]
+
+[tasks.test]
+description = "Run all unit tests using pytest to verify implementations."
+run = "pytest tests/"
