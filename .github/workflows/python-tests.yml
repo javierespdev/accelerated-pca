@@ -2,17 +2,13 @@ name: Python Tests
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        python-version: [3.9, 3.10]
 
     steps:
     - uses: actions/checkout@v3
@@ -20,7 +16,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: "3.10"
 
     - name: Install dependencies
       run: |
@@ -29,8 +25,4 @@ jobs:
         pip install pytest numpy
 
     - name: Run tests
-      run: |
-        pip install --upgrade pip
-        pip install -e .
-        pip install pytest numpy
-        pytest --maxfail=1 --disable-warnings -v
+      run: pytest --maxfail=1 --disable-warnings -v
