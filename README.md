@@ -60,7 +60,7 @@ X_gpu = pca_gpu.fit_transform(X)
 
    - (V_k) are the selected top (k) eigenvectors.
 
-## Benchmark: CPU PCA vs CUDA PCA vs Sklearn PCA
+## Benchmark: CUDA PCA vs Sklearn PCA
 
 **GPU-accelerated PCA implementation** is 3.5–4× faster than sklearn's CPU PCA on large datasets.
 
