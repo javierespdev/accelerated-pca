@@ -1,88 +1,54 @@
 import ctypes
 import numpy as np
 import os
-from typing import Optional
 
 class PCA_CUDA:
-    def __init__(self, n_components: Optional[int] = None):
+    def __init__(self, n_components):
         self.n_components = n_components
-        self.components_: Optional[np.ndarray] = None
-        self.mean_: Optional[np.ndarray] = None
-        self.singular_values_: Optional[np.ndarray] = None
-
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        so_path = os.path.join(base_dir, "libpca_cuda.so")
-        self.lib = ctypes.CDLL(so_path)
-
+        self.mean_ = None
+        self.components_ = None
+        
+        dll_path = os.path.join(os.path.dirname(__file__), "libpca_cuda.so")
+        self.lib = ctypes.CDLL(dll_path)
+        
         self.lib.pcaCUDA.argtypes = [
-            ctypes.POINTER(ctypes.c_float),  # X
-            ctypes.c_int,                    # nRows
-            ctypes.c_int,                    # nCols
-            ctypes.POINTER(ctypes.c_float),  # V
-            ctypes.POINTER(ctypes.c_float)   # S
+            ctypes.POINTER(ctypes.c_float), ctypes.c_int, ctypes.c_int, ctypes.c_int,
+            ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float),
+            ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float)
         ]
-        self.lib.pcaCUDA.restype = None
-
         self.lib.projectCUDA.argtypes = [
-            ctypes.POINTER(ctypes.c_float),  # X
-            ctypes.POINTER(ctypes.c_float),  # mean
-            ctypes.POINTER(ctypes.c_float),  # components
-            ctypes.POINTER(ctypes.c_float),  # X_proj
-            ctypes.c_int,                    # nRows
-            ctypes.c_int,                    # nCols
-            ctypes.c_int                     # nComponents
+            ctypes.POINTER(ctypes.c_float), ctypes.c_int, ctypes.c_int, ctypes.c_int,
+            ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float),
+            ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float)
         ]
-        self.lib.projectCUDA.restype = None
 
-    def fit(self, X: np.ndarray):
+    def fit(self, X):
         X = np.ascontiguousarray(X, dtype=np.float32)
-        nRows, nCols = X.shape
-        X_flat = X.ravel()
+        r, c = X.shape
+        self.mean_ = np.zeros(c, dtype=np.float32)
+        self.components_ = np.zeros((self.n_components, c), dtype=np.float32)
+        S = np.zeros(self.n_components, dtype=np.float32)
+        ms = np.zeros(1, dtype=np.float32)
 
-        V = np.zeros(nCols * nCols, dtype=np.float32)
-        S = np.zeros(nCols, dtype=np.float32)
-
-        self.lib.pcaCUDA(
-            X_flat.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
-            nRows,
-            nCols,
-            V.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
-            S.ctypes.data_as(ctypes.POINTER(ctypes.c_float))
-        )
-
-        V = V.reshape(nCols, nCols)
-
-        if self.n_components is None:
-            self.components_ = V.T
-        else:
-            self.components_ = V.T[:self.n_components]
-
-        self.mean_ = X.mean(axis=0).astype(np.float32)
-        self.singular_values_ = S
-
+        self.lib.pcaCUDA(X.ctypes.data_as(ctypes.POINTER(ctypes.c_float)), r, c, self.n_components,
+                         self.mean_.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+                         self.components_.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+                         S.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+                         ms.ctypes.data_as(ctypes.POINTER(ctypes.c_float)))
         return self
 
-    def transform(self, X: np.ndarray):
-        if self.components_ is None or self.mean_ is None:
-            raise RuntimeError("PCA not fitted yet")
-
+    def transform(self, X):
         X = np.ascontiguousarray(X, dtype=np.float32)
-        nRows, nCols = X.shape
-        nComponents = self.components_.shape[0]
+        r, c = X.shape
+        out = np.zeros((r, self.n_components), dtype=np.float32)
+        ms = np.zeros(1, dtype=np.float32)
 
-        X_proj = np.zeros((nRows, nComponents), dtype=np.float32)
+        self.lib.projectCUDA(X.ctypes.data_as(ctypes.POINTER(ctypes.c_float)), r, c, self.n_components,
+                            self.mean_.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+                            self.components_.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+                            out.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+                            ms.ctypes.data_as(ctypes.POINTER(ctypes.c_float)))
+        return out
 
-        self.lib.projectCUDA(
-            X.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
-            self.mean_.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
-            self.components_.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
-            X_proj.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
-            nRows,
-            nCols,
-            nComponents
-        )
-
-        return X_proj
-
-    def fit_transform(self, X: np.ndarray):
+    def fit_transform(self, X):
         return self.fit(X).transform(X)
