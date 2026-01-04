@@ -17,7 +17,7 @@ class PCA_CPU:
         eigen_values, eigen_vectors = np.linalg.eigh(cov_matrix)
         idx = np.argsort(eigen_values)[::-1]
         eigen_vectors = eigen_vectors[:, idx]
-        eigen_values = eigen_values[idx]  # <-- guardar orden
+        eigen_values = eigen_values[idx]
 
         k = self.n_components or eigen_vectors.shape[1]
         self.components_ = eigen_vectors[:, :k].T
