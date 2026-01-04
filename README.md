@@ -62,7 +62,7 @@ X_gpu = pca_gpu.fit_transform(X)
 
 ## Benchmark: CPU PCA vs CUDA PCA vs Sklearn PCA
 
-**GPU-accelerated PCA implementation** achieves performance comparable to the widely-used scikit-learn PCA on large datasets. This demonstrates that the library is not only functional but also highly efficient, leveraging GPU acceleration to handle high-dimensional data with speed.
+**GPU-accelerated PCA implementation** is 3.5–4× faster than sklearn's CPU PCA on large datasets.
 
 ![Benchmark](assets/benchmark/benchmark.png)
 
