@@ -37,28 +37,28 @@ X_gpu = pca_gpu.fit_transform(X)
 1. **Standardization**  
    - Normalize each feature to have zero mean and unit variance.  
 
-        ![Standardization Formula](assets/equations/standardization.svg)
+        $$X_{\text{std}} = \frac{X - \mu}{\sigma}$$
 
 2. **Compute Covariance Matrix and Eigenvectors**  
    - Captures the relationships between features.  
 
-        ![Covariance Matrix Formula](assets/equations/covariance_matrix.svg)
+        $$\text{Cov}(X) = \frac{1}{n - 1} X^T X$$
 
    - Solve:
 
-        ![Covariance Eigen Formula](assets/equations/covariance_eigen_equation.svg)
+        $$\text{Cov}(X)v = \lambda v$$
 
-   - Eigenvectors (v) indicate directions of maximum variance, eigenvalues (λ) their magnitude.
+   - Eigenvectors ($v$) indicate directions of maximum variance, eigenvalues ($\lambda$) their magnitude.
 
 3. **Select Principal Components**  
-   - Choose the first (k) eigenvectors depending on the desired explained variance.  
+   - Choose the first ($k$) eigenvectors depending on the desired explained variance.
 
 4. **Project Data onto Components**  
    - Transform original data:  
 
-        ![PCA Projection](assets/equations/pca_projection.svg)
+        $$X_{\text{reduced}} = X \cdot V_k$$
 
-   - (V_k) are the selected top (k) eigenvectors.
+   - ($V_k$) are the selected top ($k$) eigenvectors.
 
 ## Benchmark: CUDA PCA vs Sklearn PCA
 
